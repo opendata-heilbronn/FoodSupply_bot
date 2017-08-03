@@ -1,0 +1,22 @@
+{
+  "name": "food-supply-bot",
+  "version": "1.0.0",
+  "description": "FoodSupply_bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opendata-heilbronn/FoodSupply_bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/opendata-heilbronn/FoodSupply_bot/issues"
+  },
+  "homepage": "https://github.com/opendata-heilbronn/FoodSupply_bot#readme",
+  "dependencies": {
+    "telegraf": "^3.9.0"
+  }
+}
