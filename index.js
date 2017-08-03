@@ -24,9 +24,12 @@ app.command('start', ({from, chat, reply}) => {
     return reply('Welcome!');
 });
 
-app.hears('hi', (ctx) => {
+
+app.hears(/piz?za/i, (ctx) => {
     console.log("ctx: ", ctx);
-    ctx.reply('Hey there!')
+    console.log('from', ctx.from);
+    console.log('chat', ctx.chat);
+    ctx.reply('Will @' + ctx.from.username + ' Pizza?')
 });
 
 setInterval(function () {
