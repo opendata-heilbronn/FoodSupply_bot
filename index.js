@@ -4,18 +4,16 @@ const { Markup } = Telegraf;
 const db = new sqlite3.Database('foodsupply.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function (error) {
     if (error === null) {
         db.serialize(function () {
-            db.run("CREATE TABLE IF NOT EXISTS chats (chatId TEXT, created DATETIME)");
-            db.run("CREATE TABLE IF NOT EXISTS orders (order_id INTEGER PRIMARY KEY AUTOINCREMENT, chatId TEXT, created DATETIME)");
-            db.run("CREATE TABLE IF NOT EXISTS user_stats (user_order_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "userId TEXT, ORDER_ID INTEGER, " +
-                "order_time DATETIME, order_type VARCHAR(32), amount NUMERIC)");
+            db.run('CREATE TABLE IF NOT EXISTS chats (chatId TEXT, created DATETIME)');
+            db.run('CREATE TABLE IF NOT EXISTS orders (order_id INTEGER PRIMARY KEY AUTOINCREMENT, chatId TEXT, created DATETIME)');
+            db.run('CREATE TABLE IF NOT EXISTS user_stats (user_order_id INTEGER PRIMARY KEY AUTOINCREMENT, ' +
+                'userId TEXT, ORDER_ID INTEGER, ' +
+                'order_time DATETIME, order_type VARCHAR(32), amount NUMERIC)');
         });
     }
 });*/
 
 
-let chatRoomId = null;
-const foodChatRoomId = {};
 const questions = {
     subway_vote: {
         question: ' will einen 🌯 Sub, wer will auch einen?',
@@ -40,24 +38,26 @@ const questions = {
     }
 };
 
-console.log("Running bot with token: ", process.env.BOT_TOKEN);
-const app = new Telegraf(process.env.BOT_TOKEN, { username: "FoodSupply_bot" });
+const database = {};
+const chatRooms = {};
+
+console.log('Running bot with token: ', process.env.BOT_TOKEN);
+const app = new Telegraf(process.env.BOT_TOKEN, { username: 'FoodSupply_bot' });
 app.command('start', ({ from, chat, reply }) => {
     console.log('start', from);
     console.log('chat', chat);
-    chatRoomId = chat.id;
     return reply('Welcome!');
 });
 
-app.command('/datenschutz', (ctx, chat) => {
-    chatRoomId = chat.id;
+app.command('/datenschutz', (ctx) => {
     ctx.reply('Dieser Bot speichert zu Diagnosezwecken und zur Verbesserung des Services alle empfangenen Daten temporär zwischen.Diese Daten werden vertraulich behandelt und keinesfalls an Dritte weitergegeben.')
 });
 
-app.command('/food', (ctx, chat) => {
-    chatRoomId = chat.id;
+app.command('/food', (ctx) => {
+    const vote = { 'chatRoomId': ctx.chat.id, 'created': Date.now(), 'title': ctx.chat.title };
+    database[ctx.from.id] = vote;
     const userId = ctx.from.id;
-    foodChatRoomId[ctx.from.id] = ctx.chat;
+    console.log(ctx);
     console.log(ctx.chat);
 
     const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦Eis', 'ice_vote'), Markup.callbackButton('🍕Pizza', 'pizza_vote'),
@@ -66,18 +66,22 @@ app.command('/food', (ctx, chat) => {
 });
 
 function handleFoodRequest(vote, ctx) {
-    const chat = foodChatRoomId[ctx.from.id];
-    if (chat) {
-        console.log(chat);
+    const voteDatabase = database[ctx.from.id];
+    if (voteDatabase) {
+        console.log(voteDatabase);
         const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
         Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
-        if(questions[vote].answerC){
+        if (questions[vote].answerC) {
             buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
         }
         const keyboard = Markup.inlineKeyboard(buttons);
-        ctx.telegram.sendMessage(chat.id, '@' + ctx.from.username + questions[vote].question, keyboard.extra());
-        ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + chat.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
-        delete foodChatRoomId[ctx.from.id];
+        ctx.telegram.sendMessage(voteDatabase.chatRoomId, '@' + ctx.from.username + questions[vote].question, keyboard.extra());
+        ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } })
+            .then((response) => {
+                console.log(response);
+                const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'messageId': response.message_id };
+                chatRooms[voteDatabase.chatRoomId] = chatRoom;
+            });
     }
 };
 
@@ -97,8 +101,51 @@ app.action('vote', (ctx) => {
     handleFoodRequest('vote', ctx);
 });
 
+app.action('iwant', (ctx) => {
+    console.log('chatRooms: ', chatRooms);
+    console.log('ctx.chat: ', ctx.chat);
+    console.log('ctx.from: ', ctx.from);
+    const chatRoom = chatRooms[ctx.chat.id];
+    if (chatRoom) {
+        const response = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
+        chatRoom.votes[ctx.from.id] = response;
+        const vote = chatRoom.type;
+        const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
+        Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
+        if (questions[vote].answerC) {
+            buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
+        }
+        const keyboard = Markup.inlineKeyboard(buttons);
+        let message = '@' + ctx.from.username + questions[vote].question;
+        let iwantUsers = 'Folgende Personen wollen auch ';
+        Object.keys(chatRoom.votes).forEach((userId) => {
+            if (chatRoom.votes[userId].vote === 'iwant') {
+                iwantUsers += chatRoom.votes[userId].name;
+            }
+        })
+        message += iwantUsers;
+        app.editMessageText(chatRoom.chatRoomId, chatRoom.messageId, null, message, keyboard.extra());
+    }
+});
+/*
+app.action('nothanks', (ctx) => {
+    handleVoteRequest('vote', ctx);
+});
+
+app.action('choose_pizza', (ctx) => {
+    handleFoodRequest('vote', ctx);
+});
+
+app.action('choose_subway', (ctx) => {
+    handleFoodRequest('vote', ctx);
+});
+
+app.action('choose_nothing', (ctx) => {
+    handleFoodRequest('vote', ctx);
+});
+
 app.on('callback_query', (ctx) => {
     console.log(ctx.callbackQuery);
-});
+});*/
 
 app.startPolling();
