@@ -65,23 +65,29 @@ app.command('/food', (ctx) => {
     ctx.telegram.sendMessage(userId, 'Wähle eine der folgenden Umfragen!', keyboard.extra());
 });
 
+function createButtonsForVote(vote) {
+    const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
+    Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
+    if (questions[vote].answerC) {
+        buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
+    }
+    return buttons;
+}
+
 function handleFoodRequest(vote, ctx) {
     const voteDatabase = database[ctx.from.id];
     if (voteDatabase) {
         console.log(voteDatabase);
-        const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
-        Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
-        if (questions[vote].answerC) {
-            buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
-        }
-        const keyboard = Markup.inlineKeyboard(buttons);
-        ctx.telegram.sendMessage(voteDatabase.chatRoomId, '@' + ctx.from.username + questions[vote].question, keyboard.extra());
-        ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } })
+        const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
+        ctx.telegram.sendMessage(voteDatabase.chatRoomId, '@' + ctx.from.username + questions[vote].question, keyboard.extra())
             .then((response) => {
                 console.log(response);
                 const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'messageId': response.message_id };
+                const userResponse = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
+                chatRoom.votes[ctx.from.id] = userResponse;
                 chatRooms[voteDatabase.chatRoomId] = chatRoom;
             });
+        ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
     }
 };
 
@@ -103,29 +109,40 @@ app.action('vote', (ctx) => {
 
 app.action('iwant', (ctx) => {
     console.log('chatRooms: ', chatRooms);
-    console.log('ctx.chat: ', ctx.chat);
-    console.log('ctx.from: ', ctx.from);
     const chatRoom = chatRooms[ctx.chat.id];
     if (chatRoom) {
-        const response = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
-        chatRoom.votes[ctx.from.id] = response;
-        const vote = chatRoom.type;
-        const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
-        Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
-        if (questions[vote].answerC) {
-            buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
+        const previousResponse = chatRoom.votes[ctx.from.id];
+        if (previousResponse) {
+            ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.');
         }
-        const keyboard = Markup.inlineKeyboard(buttons);
-        let message = '@' + ctx.from.username + questions[vote].question;
-        let iwantUsers = 'Folgende Personen wollen auch ';
-        Object.keys(chatRoom.votes).forEach((userId) => {
-            if (chatRoom.votes[userId].vote === 'iwant') {
-                iwantUsers += chatRoom.votes[userId].name;
-            }
-        })
-        message += iwantUsers;
-        app.editMessageText(chatRoom.chatRoomId, chatRoom.messageId, null, message, keyboard.extra());
+        else {
+            const response = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
+            chatRoom.votes[ctx.from.id] = response;
+            const vote = chatRoom.type;
+            const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
+            let message = '@' + ctx.from.username + questions[vote].question;
+            let iwantUsers = '\nFolgende Personen wollen auch: ';
+            Object.values(chatRoom.votes).filter((element) => element.vote === 'iwant').forEach((element, index, array) => {
+                if (index === 0) {
+                    iwantUsers += element.name;
+                }
+                else if (index === array.length - 1) {
+                    iwantUsers += ' und ' + element.name;
+                }
+                else {
+                    iwantUsers += ', ' + element.name;
+                }
+            })
+            message += iwantUsers;
+            ctx.telegram.editMessageText(ctx.chat.id, chatRoom.messageId, null, message, keyboard.extra()).catch((error) => {
+                console.log(error);
+            });
+        }
+
     }
+    else {
+        ctx.telegram.sendMessage(ctx.from.id, 'In "' + ctx.chat.title + '" wurde bis jetzt noch keine Umfrage gestartet!');
+    };
 });
 /*
 app.action('nothanks', (ctx) => {
