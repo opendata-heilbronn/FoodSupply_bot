@@ -1,5 +1,6 @@
 const Telegraf = require('telegraf');
 const { Markup } = Telegraf;
+const messages = require('./messages');
 /*const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('foodsupply.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, function (error) {
     if (error === null) {
@@ -22,8 +23,17 @@ const questions = {
     },
     pizza_vote: {
         question: ' will 🍕Pizza, wer will auch Pizza?',
-        answerA: { text: 'Ich will auch', callback: 'iwant' },
-        answerB: { text: 'Nein, danke', callback: 'nothanks' }
+        answers: [
+            [{ text: '1/4', callback: 'qty_0.25' }, { text: '1/2', callback: 'qty_0.5' }, { text: '3/4', callback: 'qty_0.75' }, { text: '1', callback: 'qty_1' }],
+            [{ text: 'Döner', callback: 'iwant_döner' }, { text: 'Döner m. Mais', callback: 'iwant_dönerMais' }],
+            [{ text: 'Salami', callback: 'iwant_salami' }, { text: 'Schinken', callback: 'iwant_schinken' }],
+            [{ text: 'Joni', callback: 'iwant_joni' }, { text: 'Hawaii', callback: 'iwant_hawaii' }],
+            [{ text: 'Pilze', callback: 'iwant_pilze' }, { text: 'Sucuk', callback: 'iwant_sucuk' }],
+            [{ text: 'Nein, danke', callback: 'nothanks' }]
+        ],
+        iwantList: 'Folgende Personen wollen Pizza: ',
+        nothanksList: 'Folgende Personen wollen keine Pizza: ',
+        summary: 'Insgesamt wollen # Personen Pizza.'
     },
     ice_vote: {
         qustion: ' will 🍦Eis, wer will noch Eis?',
@@ -37,6 +47,10 @@ const questions = {
         answerC: { text: 'Nichts davon', callback: 'choose_nothing:' }
     }
 };
+
+const userQuestions =  {
+
+}
 
 const database = {};
 const chatRooms = {};
@@ -66,11 +80,15 @@ app.command('/food', (ctx) => {
 });
 
 function createButtonsForVote(vote) {
-    const buttons = [[Markup.callbackButton(questions[vote].answerA.text, questions[vote].answerA.callback),
-    Markup.callbackButton(questions[vote].answerB.text, questions[vote].answerB.callback)]];
-    if (questions[vote].answerC) {
-        buttons.push([Markup.callbackButton(questions[vote].answerC.text, questions[vote].answerC.callback)]);
-    }
+    const buttons = [];
+    const answers = questions[vote].answers;
+    answers.forEach((answerLine) => {
+        const buttonLine = [];
+        answerLine.forEach((answer) => {
+            buttonLine.push(Markup.callbackButton(answer.text, answer.callback));
+        });
+        buttons.push(buttonLine);
+    });
     return buttons;
 }
 
@@ -79,7 +97,7 @@ function handleFoodRequest(vote, ctx) {
     if (voteDatabase) {
         console.log(voteDatabase);
         const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
-        ctx.telegram.sendMessage(voteDatabase.chatRoomId, '@' + ctx.from.username + questions[vote].question, keyboard.extra())
+        ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
             .then((response) => {
                 console.log(response);
                 const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'messageId': response.message_id };
@@ -107,35 +125,23 @@ app.action('vote', (ctx) => {
     handleFoodRequest('vote', ctx);
 });
 
-app.action('iwant', (ctx) => {
+function handleVoteAction(ctx, voteAction) {
     console.log('chatRooms: ', chatRooms);
     const chatRoom = chatRooms[ctx.chat.id];
     if (chatRoom) {
         const previousResponse = chatRoom.votes[ctx.from.id];
-        if (previousResponse) {
+        if (previousResponse && previousResponse.vote === voteAction) {
             ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.').catch((error) => {
                 console.log(error);
             })
         }
         else {
-            const response = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
+            const response = { 'name': ctx.from.first_name, 'vote': voteAction, 'time': Date.now() };
             chatRoom.votes[ctx.from.id] = response;
             const vote = chatRoom.type;
             const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
-            let message = '@' + ctx.from.username + questions[vote].question;
-            let iwantUsers = '\nFolgende Personen wollen auch: ';
-            Object.values(chatRoom.votes).filter((element) => element.vote === 'iwant').forEach((element, index, array) => {
-                if (index === 0) {
-                    iwantUsers += element.name;
-                }
-                else if (index === array.length - 1) {
-                    iwantUsers += ' und ' + element.name;
-                }
-                else {
-                    iwantUsers += ', ' + element.name;
-                }
-            })
-            message += iwantUsers;
+            let message = messages.createIwantMessage(chatRoom, questions[vote]);
+            message += messages.createActiveVoteMessage(chatRoom, questions[vote]);
             ctx.telegram.editMessageText(ctx.chat.id, chatRoom.messageId, null, message, keyboard.extra()).catch((error) => {
                 console.log(error);
             });
@@ -143,13 +149,18 @@ app.action('iwant', (ctx) => {
 
     }
     else {
-        ctx.telegram.sendMessage(ctx.from.id, 'In "' + ctx.chat.title + '" wurde bis jetzt noch keine Umfrage gestartet!');
+        ctx.telegram.sendMessage(ctx.from.id, 'In "' + ctx.chat.title + '" läuft keine aktive Umfrage!');
     };
+};
+app.action('iwant', (ctx) => {
+    handleVoteAction(ctx, 'iwant');
 });
-/*
+
 app.action('nothanks', (ctx) => {
-    handleVoteRequest('vote', ctx);
+    handleVoteAction(ctx, 'nothanks');
 });
+
+/*
 
 app.action('choose_pizza', (ctx) => {
     handleFoodRequest('vote', ctx);
