@@ -113,7 +113,9 @@ app.action('iwant', (ctx) => {
     if (chatRoom) {
         const previousResponse = chatRoom.votes[ctx.from.id];
         if (previousResponse) {
-            ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.');
+            ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.').catch((error) => {
+                console.log(error);
+            })
         }
         else {
             const response = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
