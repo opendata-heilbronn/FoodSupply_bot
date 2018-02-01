@@ -24,12 +24,12 @@ const questions = {
     pizza_vote: {
         question: ' will 🍕Pizza, wer will auch Pizza?',
         answers: [
-            [{ text: '1/4', callback: 'qty_0.25' }, { text: '1/2', callback: 'qty_0.5' }, { text: '3/4', callback: 'qty_0.75' }, { text: '1', callback: 'qty_1' }],
-            [{ text: 'Döner', callback: 'iwant_döner' }, { text: 'Döner m. Mais', callback: 'iwant_dönerMais' }],
-            [{ text: 'Salami', callback: 'iwant_salami' }, { text: 'Schinken', callback: 'iwant_schinken' }],
-            [{ text: 'Joni', callback: 'iwant_joni' }, { text: 'Hawaii', callback: 'iwant_hawaii' }],
-            [{ text: 'Pilze', callback: 'iwant_pilze' }, { text: 'Sucuk', callback: 'iwant_sucuk' }],
-            [{ text: 'Nein, danke', callback: 'nothanks' }]
+            [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
+            [{ text: 'Döner', callback: 'pizza_iwant_döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_dönerMais' }],
+            [{ text: 'Salami', callback: 'pizza_iwant_salami' }, { text: 'Schinken', callback: 'pizza_iwant_schinken' }],
+            [{ text: 'Joni', callback: 'pizza_iwant_joni' }, { text: 'Hawaii', callback: 'pizza_iwant_hawaii' }],
+            [{ text: 'Pilze', callback: 'pizza_iwant_pilze' }, { text: 'Sucuk', callback: 'pizza_iwant_sucuk' }],
+            [{ text: 'zurücksetzen', callback: 'pizza_reset' }, { text: 'abschließen', callback: 'pizza_finished' }, { text: 'Nein, danke', callback: 'pizza_nothanks' }]
         ],
         iwantList: 'Folgende Personen wollen Pizza: ',
         nothanksList: 'Folgende Personen wollen keine Pizza: ',
@@ -48,7 +48,7 @@ const questions = {
     }
 };
 
-const userQuestions =  {
+const userQuestions = {
 
 }
 
@@ -125,11 +125,25 @@ app.action('vote', (ctx) => {
     handleFoodRequest('vote', ctx);
 });
 
-function handleVoteAction(ctx, voteAction) {
+function handleVoteAction(ctx, voteAction, param) {
     console.log('chatRooms: ', chatRooms);
     const chatRoom = chatRooms[ctx.chat.id];
     if (chatRoom) {
-        const previousResponse = chatRoom.votes[ctx.from.id];
+        let previousResponse = chatRoom.votes[ctx.from.id];
+        if (!previousResponse) {
+            previousResponse = { created: Date.now() };
+            chatRoom.votes[ctx.from.id] = previousResponse;
+
+        }
+        if (voteAction === 'qty') {
+            previousResponse.lastQty = param;
+        } else if (voteAction === 'iwant') {
+            const qty = previousResponse.lastQty ? Number(previousResponse.lastQty) : 1;
+            const selection = previousResponse.selection || {};
+        }
+
+
+
         if (previousResponse && previousResponse.vote === voteAction) {
             ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.').catch((error) => {
                 console.log(error);
@@ -152,8 +166,12 @@ function handleVoteAction(ctx, voteAction) {
         ctx.telegram.sendMessage(ctx.from.id, 'In "' + ctx.chat.title + '" läuft keine aktive Umfrage!');
     };
 };
-app.action('iwant', (ctx) => {
-    handleVoteAction(ctx, 'iwant');
+app.action(/pizza_([a-z]+)_?(.*)/, (ctx) => {
+    handleVoteAction(ctx, ctx.match[1], ctx.match[2]);
+});
+
+app.action(/qty_(.*)/, (ctx) => {
+    handleVoteAction(ctx, 'iwant', ctx.match[1])
 });
 
 app.action('nothanks', (ctx) => {
@@ -161,7 +179,6 @@ app.action('nothanks', (ctx) => {
 });
 
 /*
-
 app.action('choose_pizza', (ctx) => {
     handleFoodRequest('vote', ctx);
 });
