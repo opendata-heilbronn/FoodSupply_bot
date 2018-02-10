@@ -31,23 +31,23 @@ describe('messages', () => {
     it('createActiveVoteMessage TwoIwant, TwoNothanks', () => {
         const result = messages.createActiveVoteMessage({
             votes: {
-                '1': { 'name': 'Max', 'vote': 'iwant', 'time': Date.now() },
-                '2': { 'name': 'Micha', 'vote': 'iwant', 'time': Date.now() },
-                '3': { 'name': 'Lisa', 'vote': 'nothanks', 'time': Date.now() },
-                '4': { 'name': 'Marie', 'vote': 'nothanks', 'time': Date.now() }
+                '1': {'name': 'Max', 'vote': 'iwant', 'time': Date.now()},
+                '2': {'name': 'Micha', 'vote': 'iwant', 'time': Date.now()},
+                '3': {'name': 'Lisa', 'vote': 'nothanks', 'time': Date.now()},
+                '4': {'name': 'Marie', 'vote': 'nothanks', 'time': Date.now()}
             }
         }, pizzaVote);
         chai.expect(result).to.equal('\nFolgende Personen wollen auch Pizza: Max und Micha.\nFolgende Personen wollen keine Pizza: Lisa und Marie.\nInsgesamt wollen 2 Personen Pizza.');
-    })
+    });
     it('createActiveVoteMessage TwoNothanks', () => {
         const result = messages.createActiveVoteMessage({
             votes: {
-                '1': { 'name': 'Lisa', 'vote': 'nothanks', 'time': Date.now() },
-                '2': { 'name': 'Marie', 'vote': 'nothanks', 'time': Date.now() }
+                '1': {'name': 'Lisa', 'vote': 'nothanks', 'time': Date.now()},
+                '2': {'name': 'Marie', 'vote': 'nothanks', 'time': Date.now()}
             }
         }, pizzaVote);
         chai.expect(result).to.equal('\nFolgende Personen wollen keine Pizza: Lisa und Marie.');
-    })
+    });
     it('createIwantMessage', () => {
         const result = messages.createIwantMessage({
             votes: {
