@@ -107,7 +107,7 @@ function handleFoodRequest(vote, ctx) {
             });
         ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
     }
-};
+}
 
 app.action('pizza_vote', (ctx) => {
     handleFoodRequest('pizza_vote', ctx);
