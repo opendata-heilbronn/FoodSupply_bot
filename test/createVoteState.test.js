@@ -56,7 +56,7 @@ describe("createVoteStatus", () => {
         const sums = messages.sumSelections(votes);
         const result = messages.createSumOverview(sums);
 
-        assert.equal(result, "Zu bestellen wären: 0.25 döner, 1 salami, 0.75 pilze und 1 schinken - Insgesamt also min. 3 Pizzen");
+        assert.equal(result, "Zu bestellen wären: \n0.25 döner\n1 salami\n0.75 pilze\n1 schinken\nInsgesamt also min. 3 Pizzen");
 
     });
 });

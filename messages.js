@@ -68,10 +68,10 @@ function sumSelections(votes) {
 function createUserOverview(votes) {
     let result = "";
     const amountMap = {
-        "0.25": "viertel",
-        "0.5": "halbe",
-        "0.75": "dreiviertel",
-        "1": "ganze"
+        "0.25": "eine viertel",
+        "0.5": "eine halbe",
+        "0.75": "eine dreiviertel",
+        "1": "eine ganze"
     };
     const voteArray = Object.values(votes).filter((user) => {
         return user.selection && Object.keys(user.selection).length > 0;
@@ -116,19 +116,13 @@ function createSumOverview(sums) {
         let total = 0;
         let result = "Zu bestellen wären: ";
         sumKeys.forEach((product, index) => {
-            if (index > 0) {
-                if (index === sumKeys.length - 1) {
-                    result += " und ";
-                } else {
-                    result += ", ";
-                }
-            }
+            result += '\n';
             let amount = sums[product];
             total += amount;
             result += amount + " " + product;
         });
         if (total > 0) {
-            result += " - Insgesamt also min. " + total + " Pizzen";
+            result += "\nInsgesamt also min. " + total + " Pizzen";
         }
         return result;
     } else {
@@ -136,4 +130,4 @@ function createSumOverview(sums) {
     }
 
 }
-module.exports = {createActiveVoteMessage, createIwantMessage, sumSelections, createSumOverview, createUserOverview};
+module.exports = { createActiveVoteMessage, createIwantMessage, sumSelections, createSumOverview, createUserOverview };

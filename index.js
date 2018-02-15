@@ -22,21 +22,22 @@ const questions = {
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
     pizza_vote: {
-        question: ' will 🍕Pizza, wer will auch Pizza?',
+        question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine ganze zu bestellen reicht ein Klick auf die Sorte.',
         answers: [
             [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
-            [{ text: 'Döner', callback: 'pizza_iwant_döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_dönerMais' }],
-            [{ text: 'Salami', callback: 'pizza_iwant_salami' }, { text: 'Schinken', callback: 'pizza_iwant_schinken' }],
-            [{ text: 'Joni', callback: 'pizza_iwant_joni' }, { text: 'Hawaii', callback: 'pizza_iwant_hawaii' }],
-            [{ text: 'Pilze', callback: 'pizza_iwant_pilze' }, { text: 'Sucuk', callback: 'pizza_iwant_sucuk' }],
-            [{ text: 'zurücksetzen', callback: 'pizza_reset' }, { text: 'abschließen', callback: 'pizza_finished' }, { text: 'Nein, danke', callback: 'pizza_nothanks' }]
+            [{ text: 'Döner', callback: 'pizza_iwant_Döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_Döner mit Mais' }],
+            [{ text: 'Salami', callback: 'pizza_iwant_Salami' }, { text: 'Schinken', callback: 'pizza_iwant_Schinken' }],
+            [{ text: 'Joni', callback: 'pizza_iwant_Joni' }, { text: 'Hawaii', callback: 'pizza_iwant_Hawaii' }],
+            [{ text: 'Pilze', callback: 'pizza_iwant_Pilze' }, { text: 'Sucuk', callback: 'pizza_iwant_Sucuk' }],
+            [{ text: 'Pepperoni', callback: 'pizza_iwant_Pepperoni' }, { text: 'Margherita', callback: 'pizza_iwant_Margherita' }],
+            [{ text: 'zurücksetzen', callback: 'pizza_reset' }, { text: 'Nein, danke', callback: 'pizza_nothanks' }]
         ],
         iwantList: 'Folgende Personen wollen Pizza: ',
         nothanksList: 'Folgende Personen wollen keine Pizza: ',
         summary: 'Insgesamt wollen # Personen Pizza.'
     },
     ice_vote: {
-        qustion: ' will 🍦Eis, wer will noch Eis?',
+        question: ' will 🍦Eis, wer will noch Eis?',
         answerA: { text: 'Ich will auch', callback: 'iwant' },
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
@@ -71,9 +72,6 @@ app.command('/food', (ctx) => {
     const vote = { 'chatRoomId': ctx.chat.id, 'created': Date.now(), 'title': ctx.chat.title };
     database[ctx.from.id] = vote;
     const userId = ctx.from.id;
-    console.log(ctx);
-    console.log(ctx.chat);
-
     const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦Eis', 'ice_vote'), Markup.callbackButton('🍕Pizza', 'pizza_vote'),
     Markup.callbackButton('🌯 Subway', 'subway_vote')], [Markup.callbackButton('🍕Pizza vs. 🌯 Subway', 'vote')]]);
     ctx.telegram.sendMessage(userId, 'Wähle eine der folgenden Umfragen!', keyboard.extra());
@@ -99,11 +97,11 @@ function handleFoodRequest(vote, ctx) {
         const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
         ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
             .then((response) => {
-                console.log(response);
-                const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'messageId': response.message_id };
-                const userResponse = { 'name': ctx.from.first_name, 'vote': 'iwant', 'time': Date.now() };
-                chatRoom.votes[ctx.from.id] = userResponse;
+                const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'keyboardMessageId': response.message_id };
                 chatRooms[voteDatabase.chatRoomId] = chatRoom;
+                ctx.telegram.sendMessage(voteDatabase.chatRoomId, 'Niemand hat abgestimmt.').then((secondResponse) => {
+                    chatRoom.messageId = secondResponse.message_id;
+                });
             });
         ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
     }
@@ -126,12 +124,13 @@ app.action('vote', (ctx) => {
 });
 
 function handleVoteAction(ctx, voteAction, param) {
-    console.log('chatRooms: ', chatRooms);
+    //console.log('chatRooms: ', chatRooms);
+    console.log(voteAction, param);
     const chatRoom = chatRooms[ctx.chat.id];
     if (chatRoom) {
         let previousResponse = chatRoom.votes[ctx.from.id];
         if (!previousResponse) {
-            previousResponse = { created: Date.now() };
+            previousResponse = { 'name': ctx.from.first_name, 'time': Date.now() };
             chatRoom.votes[ctx.from.id] = previousResponse;
 
         }
@@ -140,23 +139,28 @@ function handleVoteAction(ctx, voteAction, param) {
         } else if (voteAction === 'iwant') {
             const qty = previousResponse.lastQty ? Number(previousResponse.lastQty) : 1;
             const selection = previousResponse.selection || {};
+            selection[param] = qty;
+            previousResponse.selection = selection;
+            delete previousResponse.lastQty;
+        } else if (voteAction === 'reset') {
+            delete chatRoom.votes[ctx.from.id];
         }
 
-
-
-        if (previousResponse && previousResponse.vote === voteAction) {
-            ctx.telegram.sendMessage(ctx.from.id, 'Vielen Dank, Du hast schon abgestimmt.').catch((error) => {
-                console.log(error);
-            })
+        const vote = chatRoom.type;
+        let message = '';
+        const sums = messages.sumSelections(chatRoom.votes);
+        const sumOverview = messages.createSumOverview(sums);
+        if (sumOverview) {
+            message += messages.createUserOverview(chatRoom.votes);
+            message += '\n' + sumOverview;
+        } else {
+            message = 'Niemand hat abgestimmt.';
         }
-        else {
-            const response = { 'name': ctx.from.first_name, 'vote': voteAction, 'time': Date.now() };
-            chatRoom.votes[ctx.from.id] = response;
-            const vote = chatRoom.type;
-            const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
-            let message = messages.createIwantMessage(chatRoom, questions[vote]);
-            message += messages.createActiveVoteMessage(chatRoom, questions[vote]);
-            ctx.telegram.editMessageText(ctx.chat.id, chatRoom.messageId, null, message, keyboard.extra()).catch((error) => {
+
+        if (chatRoom.lastMessage !== message) {
+            ctx.telegram.editMessageText(ctx.chat.id, chatRoom.messageId, null, message).then(() => {
+                chatRoom.lastMessage = message;
+            }).catch((error) => {
                 console.log(error);
             });
         }
