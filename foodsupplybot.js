@@ -11,12 +11,14 @@ const questions = {
     pizza_vote: {
         question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine ganze zu bestellen reicht ein Klick auf die Sorte.',
         answers: [
-            [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
+            [{ text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
             [{ text: 'Döner', callback: 'pizza_iwant_Döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_Döner mit Mais' }],
             [{ text: 'Salami', callback: 'pizza_iwant_Salami' }, { text: 'Schinken', callback: 'pizza_iwant_Schinken' }],
             [{ text: 'Joni', callback: 'pizza_iwant_Joni' }, { text: 'Hawaii', callback: 'pizza_iwant_Hawaii' }],
             [{ text: 'Pilze', callback: 'pizza_iwant_Pilze' }, { text: 'Sucuk', callback: 'pizza_iwant_Sucuk' }],
             [{ text: 'Pepperoni', callback: 'pizza_iwant_Pepperoni' }, { text: 'Margherita', callback: 'pizza_iwant_Margherita' }],
+            [{ text: 'Joni Spezial', callback: 'pizza_iwant_Joni Spezial' }, { text: 'Vier Käse', callback: 'pizza_iwant_Vier Käse' }],
+            [{ text: 'Seele', callback: 'pizza_iwant_Seele' }, { text: 'mimimi...MeinePizzaIstNichtDa', callback: 'pizza_iwant_HUNGER' }],
             [{ text: 'zurücksetzen', callback: 'pizza_reset' }, /*{ text: 'Nein, danke', callback: 'pizza_nothanks' }*/]
         ],
         iwantList: 'Folgende Personen wollen Pizza: ',
