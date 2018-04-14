@@ -40,9 +40,9 @@ const votes = {
 describe("createVoteStatus", () => {
     it("should create status message", () => {
         const result = messages.createUserOverview(votes);
-        assert.equal(result, "Leandro möchte viertel döner, halbe salami und viertel pilze, " +
-            "Joni möchte viertel salami und viertel pilze und " +
-            "Vale möchte viertel salami, viertel pilze und ganze schinken");
+        assert.equal(result, "Leandro möchte eine viertel döner, eine halbe salami und eine viertel pilze, " +
+            "Joni möchte eine viertel salami und eine viertel pilze und " +
+            "Vale möchte eine viertel salami, eine viertel pilze und eine ganze schinken");
     });
     it("should sum selections", () => {
         const result = messages.sumSelections(votes);
