@@ -26,13 +26,13 @@ const questions = {
         summary: 'Insgesamt wollen # Personen Pizza.'
     },
     ice_vote: {
-        question: ' will 🍦Eis, wer will noch Eis?',
+        question: ' will 🍦 Eis, wer will noch Eis?',
         answerA: { text: 'Ich will auch', callback: 'iwant' },
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
     vote: {
         question: ' will wissen, was es heute geben soll - Pizza oder Subway?',
-        answerA: { text: '🍕Pizza', callback: 'choose_pizza' },
+        answerA: { text: '🍕 Pizza', callback: 'choose_pizza' },
         answerB: { text: '🌯 Subway', callback: 'choose_subway' },
         answerC: { text: 'Nichts davon', callback: 'choose_nothing:' }
     }
@@ -58,8 +58,8 @@ module.exports = function (botToken) {
         const vote = { 'chatRoomId': ctx.chat.id, 'created': Date.now(), 'title': ctx.chat.title };
         database[ctx.from.id] = vote;
         const userId = ctx.from.id;
-        const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦Eis', 'ice_vote'), Markup.callbackButton('🍕Pizza', 'pizza_vote'),
-        Markup.callbackButton('🌯 Subway', 'subway_vote')], [Markup.callbackButton('🍕Pizza vs. 🌯 Subway', 'vote')]]);
+        const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦 Eis', 'ice_vote'), Markup.callbackButton('🍕 Pizza', 'pizza_vote'),
+        Markup.callbackButton('🌯 Subway', 'subway_vote')], [Markup.callbackButton('🍕 Pizza vs. 🌯 Subway', 'vote')]]);
         ctx.telegram.sendMessage(userId, 'Wähle eine der folgenden Umfragen!', keyboard.extra());
     });
 
