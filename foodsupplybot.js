@@ -9,7 +9,7 @@ const questions = {
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
     pizza_vote: {
-        question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine ganze zu bestellen reicht ein Klick auf die Sorte.',
+        question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine Ganze zu bestellen reicht ein Klick auf die Sorte.',
         answers: [
             [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
             [{ text: 'Döner', callback: 'pizza_iwant_Döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_Döner mit Mais' }],
@@ -51,7 +51,7 @@ module.exports = function (botToken) {
     });
 
     app.command('/datenschutz', (ctx) => {
-        ctx.reply('Dieser Bot speichert zu Diagnosezwecken und zur Verbesserung des Services alle empfangenen Daten temporär zwischen.Diese Daten werden vertraulich behandelt und keinesfalls an Dritte weitergegeben.')
+        ctx.reply('Dieser Bot speichert zu Diagnosezwecken und zur Verbesserung des Services alle empfangenen Daten temporär zwischen. Diese Daten werden vertraulich behandelt und keinesfalls an Dritte weitergegeben.')
     });
 
     app.command('/food', (ctx) => {
@@ -170,4 +170,4 @@ module.exports = function (botToken) {
         handleVoteAction(ctx, 'nothanks');
     });
     return app;
-}
+};
