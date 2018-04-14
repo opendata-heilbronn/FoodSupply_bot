@@ -1,0 +1,17 @@
+language: node_js
+node_js:
+  - 7
+branches:
+  only:
+    - master
+cache:
+  directories:
+    - node_modules
+matrix:
+  include:
+    - env: STEP=lint
+    - env: STEP=test
+before_install:
+  - npm install
+script:
+  - npm run $STEP
