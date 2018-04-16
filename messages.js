@@ -1,5 +1,5 @@
 function createIwantMessage(chatRoom, voteConfig) {
-    const voteArray = Object.values(chatRoom.votes).filter((element) => element.vote === 'iwant').sort((a, b) => {
+    const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === 'iwant').sort((a, b) => {
         return b.time - a.time;
     });
     if (voteArray.length > 0) {
@@ -16,7 +16,7 @@ function createActiveVoteMessage(chatRoom, voteConfig) {
 
     function createUserlistForVote(vote, listMessage) {
         let voteMessage = '';
-        const voteArray = Object.values(chatRoom.votes).filter((element) => element.vote === vote);
+        const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === vote);
         if (voteArray.length > 0) {
             let voteUsers = '\n' + listMessage;
             voteArray.forEach((element, index, array) => {
@@ -38,7 +38,7 @@ function createActiveVoteMessage(chatRoom, voteConfig) {
     message += createUserlistForVote('iwant', voteConfig.iwantList);
     message += createUserlistForVote('nothanks', voteConfig.nothanksList);
 
-    const voteArray = Object.values(chatRoom.votes).filter((element) => element.vote === 'iwant');
+    const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === 'iwant');
 
     if (voteArray.length > 0) {
         const total = voteArray.length;
@@ -49,7 +49,7 @@ function createActiveVoteMessage(chatRoom, voteConfig) {
 
 function sumSelections(votes) {
     const result = {};
-    Object.values(votes).forEach((user) => {
+    Object.keys(votes).map((key) => { return votes[key]; }).forEach((user) => {
         if (user.selection) {
             Object.keys(user.selection).forEach((product) => {
                 let amount = result[product];
@@ -73,7 +73,7 @@ function createUserOverview(votes) {
         "0.75": "eine dreiviertel",
         "1": "eine ganze"
     };
-    const voteArray = Object.values(votes).filter((user) => {
+    const voteArray = Object.keys(votes).map((key) => { return votes[key]; }).filter((user) => {
         return user.selection && Object.keys(user.selection).length > 0;
     });
 
@@ -90,7 +90,7 @@ function createUserOverview(votes) {
                     }
                 }
                 let amount = user.selection[product];
-                let amountText = amountMap["" + amount];
+                let amountText = amountMap[String(amount)];
                 if (amountText) {
                     userProducts += amountText + " " + product;
                 } else {
@@ -115,7 +115,7 @@ function createSumOverview(sums) {
     if (sumKeys.length > 0) {
         let total = 0;
         let result = "Zu bestellen wären: ";
-        sumKeys.forEach((product, index) => {
+        sumKeys.forEach((product) => {
             result += '\n';
             let amount = sums[product];
             total += amount;

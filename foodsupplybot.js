@@ -9,7 +9,7 @@ const questions = {
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
     pizza_vote: {
-        question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine ganze zu bestellen reicht ein Klick auf die Sorte.',
+        question: ' hat eine Pizza-Umfrage gestartet. Klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine Ganze zu bestellen reicht ein Klick auf die Sorte.',
         answers: [
             [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
             [{ text: 'Döner', callback: 'pizza_iwant_Döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_Döner mit Mais' }],
@@ -26,13 +26,13 @@ const questions = {
         summary: 'Insgesamt wollen # Personen Pizza.'
     },
     ice_vote: {
-        question: ' will 🍦Eis, wer will noch Eis?',
+        question: ' will 🍦 Eis, wer will noch Eis?',
         answerA: { text: 'Ich will auch', callback: 'iwant' },
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
     },
     vote: {
         question: ' will wissen, was es heute geben soll - Pizza oder Subway?',
-        answerA: { text: '🍕Pizza', callback: 'choose_pizza' },
+        answerA: { text: '🍕 Pizza', callback: 'choose_pizza' },
         answerB: { text: '🌯 Subway', callback: 'choose_subway' },
         answerC: { text: 'Nichts davon', callback: 'choose_nothing:' }
     }
@@ -51,15 +51,15 @@ module.exports = function (botToken) {
     });
 
     app.command('/datenschutz', (ctx) => {
-        ctx.reply('Dieser Bot speichert zu Diagnosezwecken und zur Verbesserung des Services alle empfangenen Daten temporär zwischen.Diese Daten werden vertraulich behandelt und keinesfalls an Dritte weitergegeben.')
+        ctx.reply('Dieser Bot speichert zu Diagnosezwecken und zur Verbesserung des Services alle empfangenen Daten temporär zwischen. Diese Daten werden vertraulich behandelt und keinesfalls an Dritte weitergegeben.')
     });
 
     app.command('/food', (ctx) => {
         const vote = { 'chatRoomId': ctx.chat.id, 'created': Date.now(), 'title': ctx.chat.title };
         database[ctx.from.id] = vote;
         const userId = ctx.from.id;
-        const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦Eis', 'ice_vote'), Markup.callbackButton('🍕Pizza', 'pizza_vote'),
-        Markup.callbackButton('🌯 Subway', 'subway_vote')], [Markup.callbackButton('🍕Pizza vs. 🌯 Subway', 'vote')]]);
+        const keyboard = Markup.inlineKeyboard([[Markup.callbackButton('🍦 Eis', 'ice_vote'), Markup.callbackButton('🍕 Pizza', 'pizza_vote'),
+        Markup.callbackButton('🌯 Subway', 'subway_vote')], [Markup.callbackButton('🍕 Pizza vs. 🌯 Subway', 'vote')]]);
         ctx.telegram.sendMessage(userId, 'Wähle eine der folgenden Umfragen!', keyboard.extra());
     });
 
@@ -170,4 +170,4 @@ module.exports = function (botToken) {
         handleVoteAction(ctx, 'nothanks');
     });
     return app;
-}
+};
