@@ -115,7 +115,7 @@ function createSumOverview(sums) {
     if (sumKeys.length > 0) {
         let total = 0;
         let result = "Zu bestellen wären: ";
-        sumKeys.forEach((product, index) => {
+        sumKeys.forEach((product) => {
             result += '\n';
             let amount = sums[product];
             total += amount;
