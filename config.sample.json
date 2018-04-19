@@ -1,4 +1,19 @@
 {
   "botToken": "your bot token",
-  "webHookURL": "https://bots.grundid.de/node/bot"
+  "webHookURL": "https://bots.grundid.de/node/bot",
+  "pizza": [
+    "Döner",
+    "Döner mit Mais",
+    "Salami",
+    "Schinken",
+    "Joni (Ananas, Schafskäse)",
+    "Hawaii",
+    "Joni Spezial (Ananas, Schafskäse, Döner)",
+    "Pilze",
+    "Sucuk",
+    "Pepperoni",
+    "Vier Käse",
+    "Seele",
+    "Seele mit Falafel"
+  ]
 }
