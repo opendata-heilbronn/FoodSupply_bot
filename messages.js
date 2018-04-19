@@ -68,10 +68,10 @@ function sumSelections(votes) {
 function createUserOverview(votes) {
     let result = "";
     const amountMap = {
-        "0.25": "eine viertel",
-        "0.5": "eine halbe",
-        "0.75": "eine dreiviertel",
-        "1": "eine ganze"
+        "0.25": "¼",
+        "0.5": "½",
+        "0.75": "¾",
+        "1": "1"
     };
     const voteArray = Object.keys(votes).map((key) => { return votes[key]; }).filter((user) => {
         return user.selection && Object.keys(user.selection).length > 0;
@@ -84,7 +84,7 @@ function createUserOverview(votes) {
             userSelection.forEach((product, productIndex) => {
                 if (productIndex > 0) {
                     if (productIndex === userSelection.length - 1) {
-                        userProducts += " und ";
+                        userProducts += " & ";
                     } else {
                         userProducts += ", ";
                     }
@@ -98,11 +98,7 @@ function createUserOverview(votes) {
                 }
             });
             if (userIndex > 0) {
-                if (userIndex === voteArray.length - 1) {
-                    result += " und ";
-                } else {
-                    result += ", ";
-                }
+                result += "\n";
             }
             result += userProducts;
         }
