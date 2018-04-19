@@ -1,29 +1,28 @@
 const assert = require('chai').assert;
 const messages = require("../messages");
 
-
 const votes = {
     "user1": {
         name: "Leandro",
         selection: {
-            "döner": 0.25,
-            "salami": 0.5,
-            "pilze": 0.25
+            0: 0.25,
+            2: 0.5,
+            7: 0.25
         }
     },
     "user2": {
         name: "Joni",
         selection: {
-            "salami": 0.25,
-            "pilze": 0.25
+            2: 0.25,
+            7: 0.25
         }
     },
     "user3": {
         name: "Vale",
         selection: {
-            "salami": 0.25,
-            "pilze": 0.25,
-            "schinken": 1
+            2: 0.25,
+            3: 1,
+            7: 0.25
         }
     },
     "user4": {
@@ -40,23 +39,23 @@ const votes = {
 describe("createVoteStatus", () => {
     it("should create status message", () => {
         const result = messages.createUserOverview(votes);
-        assert.equal(result, "Leandro möchte eine viertel döner, eine halbe salami und eine viertel pilze, " +
-            "Joni möchte eine viertel salami und eine viertel pilze und " +
-            "Vale möchte eine viertel salami, eine viertel pilze und eine ganze schinken");
+        assert.equal(result, "Leandro möchte eine viertel Döner, eine halbe Salami und eine viertel Pilze, " +
+            "Joni möchte eine viertel Salami und eine viertel Pilze und " +
+            "Vale möchte eine viertel Salami, eine ganze Schinken und eine viertel Pilze");
     });
     it("should sum selections", () => {
         const result = messages.sumSelections(votes);
-        assert.equal(result["pilze"], 0.75);
-        assert.equal(result["salami"], 1);
-        assert.equal(result["döner"], 0.25);
-        assert.equal(result["schinken"], 1);
+        assert.equal(result[7], 0.75);
+        assert.equal(result[2], 1);
+        assert.equal(result[0], 0.25);
+        assert.equal(result[3], 1);
 
     });
     it("should create sum overiew", () => {
         const sums = messages.sumSelections(votes);
         const result = messages.createSumOverview(sums);
 
-        assert.equal(result, "Zu bestellen wären: \n0.25 döner\n1 salami\n0.75 pilze\n1 schinken\nInsgesamt also min. 3 Pizzen");
+        assert.equal(result, "Zu bestellen wären: \n0.25 Döner\n1 Salami\n1 Schinken\n0.75 Pilze\nInsgesamt also min. 3 Pizzen");
 
     });
 });

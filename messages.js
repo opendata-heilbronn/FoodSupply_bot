@@ -1,3 +1,5 @@
+const config = require('./config.json');
+
 function createIwantMessage(chatRoom, voteConfig) {
     const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === 'iwant').sort((a, b) => {
         return b.time - a.time;
@@ -92,9 +94,9 @@ function createUserOverview(votes) {
                 let amount = user.selection[product];
                 let amountText = amountMap[String(amount)];
                 if (amountText) {
-                    userProducts += amountText + " " + product;
+                    userProducts += amountText + " " + config.pizza[product];
                 } else {
-                    userProducts += amount + " " + product;
+                    userProducts += amount + " " + config.pizza[product];
                 }
             });
             if (userIndex > 0) {
@@ -119,7 +121,7 @@ function createSumOverview(sums) {
             result += '\n';
             let amount = sums[product];
             total += amount;
-            result += amount + " " + product;
+            result += amount + " " + config.pizza[product];
         });
         if (total > 0) {
             result += "\nInsgesamt also min. " + total + " Pizzen";
