@@ -158,7 +158,7 @@ module.exports = function (botToken) {
             const sumOverview = messages.createSumOverview(sums);
             if (sumOverview) {
                 message += messages.createUserOverview(chatRoom.votes);
-                message += '\n' + sumOverview;
+                message += '\n' + '\n' + sumOverview;
             } else {
                 message = 'Niemand hat abgestimmt.';
             }

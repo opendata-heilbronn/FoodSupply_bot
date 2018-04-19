@@ -39,9 +39,9 @@ const votes = {
 describe("createVoteStatus", () => {
     it("should create status message", () => {
         const result = messages.createUserOverview(votes);
-        assert.equal(result, "Leandro möchte eine viertel Döner, eine halbe Salami und eine viertel Pilze, " +
-            "Joni möchte eine viertel Salami und eine viertel Pilze und " +
-            "Vale möchte eine viertel Salami, eine ganze Schinken und eine viertel Pilze");
+        assert.equal(result, "Leandro möchte ¼ Döner, ½ Salami & ¼ Pilze\n" +
+            "Joni möchte ¼ Salami & ¼ Pilze\n" +
+            "Vale möchte ¼ Salami, 1 Schinken & ¼ Pilze");
     });
     it("should sum selections", () => {
         const result = messages.sumSelections(votes);
