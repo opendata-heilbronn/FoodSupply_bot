@@ -1,52 +1,3 @@
-function createIwantMessage(chatRoom, voteConfig) {
-    const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === 'iwant').sort((a, b) => {
-        return b.time - a.time;
-    });
-    if (voteArray.length > 0) {
-        const vote = voteArray[0];
-        return vote.name + voteConfig.question;
-    }
-    else {
-        return '';
-    }
-}
-
-function createActiveVoteMessage(chatRoom, voteConfig) {
-    let message = '';
-
-    function createUserlistForVote(vote, listMessage) {
-        let voteMessage = '';
-        const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === vote);
-        if (voteArray.length > 0) {
-            let voteUsers = '\n' + listMessage;
-            voteArray.forEach((element, index, array) => {
-                if (index === 0) {
-                    voteUsers += element.name;
-                }
-                else if (index === array.length - 1) {
-                    voteUsers += ' und ' + element.name;
-                }
-                else {
-                    voteUsers += ', ' + element.name;
-                }
-            });
-            voteMessage += voteUsers + '.';
-        }
-        return voteMessage;
-    }
-
-    message += createUserlistForVote('iwant', voteConfig.iwantList);
-    message += createUserlistForVote('nothanks', voteConfig.nothanksList);
-
-    const voteArray = Object.keys(chatRoom.votes).map((key) => { return chatRoom.votes[key]; }).filter((element) => element.vote === 'iwant');
-
-    if (voteArray.length > 0) {
-        const total = voteArray.length;
-        message += '\n' + voteConfig.summary.replace('#', total);
-    }
-    return message;
-}
-
 function sumSelections(votes) {
     const result = {};
     Object.keys(votes).map((key) => { return votes[key]; }).forEach((user) => {
@@ -124,6 +75,38 @@ function createSumOverview(sums) {
     } else {
         return null;
     }
-
 }
-module.exports = { createActiveVoteMessage, createIwantMessage, sumSelections, createSumOverview, createUserOverview };
+
+function createGoOverview(votes) {
+    const result = {};
+    Object.keys(votes).map((key) => { return votes[key]; }).forEach((user) => {
+        if (user.go) {
+            if (!result[user.go]) {
+                result[user.go] = [];
+            }
+
+            result[user.go].push(user.name);
+        }
+    });
+
+    let message = '';
+    Object.keys(result).forEach((key) => {
+        message += '\n\n---\n';
+        message += key + ': ';
+
+        result[key].forEach((user, i) => {
+            if (i > 0) {
+                if (i === result[key].length - 1) {
+                    message += " & ";
+                } else {
+                    message += ", ";
+                }
+            }
+            message += user;
+        });
+    });
+
+    return message;
+}
+
+module.exports = { sumSelections, createSumOverview, createUserOverview, createGoOverview };
