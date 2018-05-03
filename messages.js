@@ -5,9 +5,9 @@ function sumSelections(votes) {
             Object.keys(user.selection).forEach((product) => {
                 let amount = result[product];
                 if (amount) {
-                    amount += user.selection[product];
+                    amount += parseFloat(user.selection[product]);
                 } else {
-                    amount = user.selection[product];
+                    amount = parseFloat(user.selection[product]);
                 }
                 result[product] = amount;
             });
@@ -60,7 +60,7 @@ function createUserOverview(votes) {
 function createSumOverview(sums) {
     const sumKeys = Object.keys(sums);
     if (sumKeys.length > 0) {
-        let total = 0;
+        let total = 0.0;
         let result = "Zu bestellen wären: ";
         sumKeys.forEach((product) => {
             result += '\n';
@@ -68,12 +68,15 @@ function createSumOverview(sums) {
             total += amount;
             result += amount + " " + product;
         });
+
+        console.log("total");
+        console.log(total);
         if (total > 0) {
             result += "\nInsgesamt also min. " + total + " Pizzen";
         }
         return result;
     } else {
-        return null;
+        return 'Niemand will 🍕 Pizza';
     }
 }
 
@@ -91,8 +94,8 @@ function createGoOverview(votes) {
 
     let message = '';
     Object.keys(result).forEach((key) => {
-        message += '\n\n---\n';
-        message += key + ': ';
+        message += '\n\n\n';
+        message += 'Zum ' + key + ' wollen: ';
 
         result[key].forEach((user, i) => {
             if (i > 0) {

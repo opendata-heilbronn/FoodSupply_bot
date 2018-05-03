@@ -6,23 +6,20 @@ const questions = {
     food_vote: {
         question: ' hat eine Food-Umfrage gestartet. Für Pizza klicke zuerst auf die Anzahl und danach auf die Sorte. Um eine Ganze zu bestellen reicht ein Klick auf die Sorte.',
         answers: [
-            [{ text: '1/4', callback: 'pizza_qty_0.25' }, { text: '1/2', callback: 'pizza_qty_0.5' }, { text: '3/4', callback: 'pizza_qty_0.75' }, { text: '1', callback: 'pizza_qty_1' }],
+            [{ text: '1/4', callback: 'qty_0.25' }, { text: '1/2', callback: 'qty_0.5' }, { text: '3/4', callback: 'qty_0.75' }, { text: '1', callback: 'qty_1' }],
             [{ text: 'Döner', callback: 'pizza_iwant_Döner' }, { text: 'Döner m. Mais', callback: 'pizza_iwant_Döner mit Mais' }],
-            [{ text: 'Salami', callback: 'pizza_iwant_Salami' }, { text: 'Schinken', callback: 'pizza_iwant_Schinken' }],
-            [{ text: 'Joni', callback: 'pizza_iwant_Joni(Ananas, Schafskäse)' }, { text: 'Hawaii', callback: 'pizza_iwant_Hawaii' }],
-            [{ text: 'Pilze', callback: 'pizza_iwant_Pilze' }, { text: 'Sucuk', callback: 'pizza_iwant_Sucuk' }],
+            [{ text: 'Joni', callback: 'pizza_iwant_Joni (Ananas, Schafskäse)' }, { text: 'Joni Spezial', callback: 'pizza_iwant_Joni Spezial (Ananas, Schafskäse, Döner)' }],
+            [{ text: 'Schinken', callback: 'pizza_iwant_Schinken' }, { text: 'Hawaii', callback: 'pizza_iwant_Hawaii' }],
+            [{ text: 'Salami', callback: 'pizza_iwant_Salami' }, { text: 'Sucuk', callback: 'pizza_iwant_Sucuk' }],
             [{ text: 'Pepperoni', callback: 'pizza_iwant_Pepperoni' }, { text: 'Margherita', callback: 'pizza_iwant_Margherita' }],
-            [{ text: 'Joni Spezial', callback: 'pizza_iwant_Joni Spezial(Ananas, Schafskäse, Döner)' }, { text: 'Vier Käse', callback: 'pizza_iwant_Vier Käse' }],
+            [{ text: 'Pilze', callback: 'pizza_iwant_Pilze' }, { text: 'Vier Käse', callback: 'pizza_iwant_Vier Käse' }],
             [{ text: 'Seele', callback: 'pizza_iwant_Seele' }, { text: 'Seele mit Falafel', callback: 'pizza_iwant_Seele mit Falafel' }],
             [
                 { text: '🍔 Burger', callback: 'go_🍔 Burger' },
                 { text: '🌯 Subway', callback: 'go_🌯 Subway' },
                 { text: '⏮ zurücksetzen', callback: 'pizza_reset' }
             ]
-        ],
-        iwantList: 'Folgende Personen wollen Pizza: ',
-        nothanksList: 'Folgende Personen wollen keine Pizza: ',
-        summary: 'Insgesamt wollen # Personen Pizza.'
+        ]
     },
     ice_vote: {
         question: ' will 🍦 Eis, wer will noch Eis?',
@@ -118,6 +115,10 @@ module.exports = function (botToken) {
         const chatRoom = chatRooms[ctx.chat.id];
 
         if (chatRoom) {
+            console.log(arguments);
+            console.log(chatRoom.votes);
+
+
             let previousResponse = chatRoom.votes[ctx.from.id];
             if (!previousResponse) {
                 previousResponse = {
@@ -150,10 +151,9 @@ module.exports = function (botToken) {
             } else {
                 const sums = messages.sumSelections(chatRoom.votes);
                 const sumOverview = messages.createSumOverview(sums);
-                if (sumOverview) {
-                    message += messages.createUserOverview(chatRoom.votes);
-                    message += '\n' + '\n' + sumOverview;
-                }
+
+                message += messages.createUserOverview(chatRoom.votes);
+                message += '\n\n' + sumOverview;
 
                 message += messages.createGoOverview(chatRoom.votes);
             }
@@ -173,7 +173,7 @@ module.exports = function (botToken) {
     }
 
     app.action(/qty_(.*)/, (ctx) => {
-        handleVoteAction(ctx, 'iwant', ctx.match[1])
+        handleVoteAction(ctx, 'qty', ctx.match[1])
     });
 
     app.action(/pizza_([a-z]+)_?(.*)/, (ctx) => {
