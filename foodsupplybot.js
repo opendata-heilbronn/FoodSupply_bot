@@ -54,12 +54,21 @@ module.exports = function (botToken) {
 
         if (voteDatabase) {
             console.log(voteDatabase);
+            console.log(ctx.chat);
 
             const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
             return ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
                 .then((response) => {
-                    const chatRoom = { 'active': true, 'votes': {}, 'isOrdered': false, 'type': vote, 'keyboardMessageId': response.message_id };
+                    const chatRoom = { 'active': true, 'votes': {}, 'starter': ctx.from.id, 'isOrdered': false, 'admins': [], 'type': vote, 'keyboardMessageId': response.message_id };
                     chatRooms[voteDatabase.chatRoomId] = chatRoom;
+
+                    ctx.telegram.getChatAdministrators(voteDatabase.chatRoomId).then((response) => {
+                        response.forEach((account) => {
+                            chatRoom.admins.push(account.user.id);
+                        });
+                        console.log('Admins loaded', chatRoom.admins);
+                    });
+
                     return ctx.telegram.sendMessage(voteDatabase.chatRoomId, 'Niemand hat abgestimmt.').then((secondResponse) => {
                         chatRoom.messageId = secondResponse.message_id;
                         return ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
@@ -90,8 +99,16 @@ module.exports = function (botToken) {
             const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
             return ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
                 .then((response) => {
-                    const chatRoom = { 'active': true, 'votes': {}, 'isOrdered': false, 'type': vote, 'keyboardMessageId': response.message_id };
+                    const chatRoom = { 'active': true, 'votes': {}, 'isOrdered': false, 'admins': [], 'type': vote, 'keyboardMessageId': response.message_id };
                     chatRooms[voteDatabase.chatRoomId] = chatRoom;
+
+                    ctx.telegram.getChatAdministrators(voteDatabase.chatRoomId).then((response) => {
+                        response.forEach((account) => {
+                            chatRoom.admins.push(account.user.id);
+                        });
+                        console.log('Admins loaded', chatRoom.admins);
+                    });
+
                     return ctx.telegram.sendMessage(voteDatabase.chatRoomId, 'Niemand hat abgestimmt.').then((secondResponse) => {
                         chatRoom.messageId = secondResponse.message_id;
                         return ctx.telegram.sendMessage(ctx.from.id, 'Deine Umfrage wurde in ' + voteDatabase.title + ' gestartet.', { reply_markup: { remove_keyboard: true } });
@@ -113,7 +130,8 @@ module.exports = function (botToken) {
 
         if (chatRoom) {
             // console.log(arguments);
-            // console.log(chatRoom.votes);
+            console.log(chatRoom);
+            console.log(ctx.from);
 
             if (chatRoom.isOrdered && voteAction !== 'go') {
                 return;
@@ -144,7 +162,9 @@ module.exports = function (botToken) {
             } else if (voteAction === 'reset') {
                 delete chatRoom.votes[ctx.from.id];
             } else if (voteAction === 'close') {
-                chatRoom.isOrdered = true;
+                if (ctx.from.id === chatRoom.starter || chatRoom.admins.indexOf(ctx.from.id) !== -1) {
+                    chatRoom.isOrdered = true;
+                }
             }
 
             let message = '';
