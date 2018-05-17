@@ -16,8 +16,11 @@ const questions = {
             [{ text: 'Seele', callback: 'pizza_iwant_Seele' }, { text: 'Seele mit Falafel', callback: 'pizza_iwant_Seele mit Falafel' }],
             [
                 { text: '🍔 Burger', callback: 'go_🍔 Burger' },
-                { text: '🌯 Subway', callback: 'go_🌯 Subway' },
-                { text: '⏮ zurücksetzen', callback: 'pizza_reset' }
+                { text: '🌯 Subway', callback: 'go_🌯 Subway' }
+            ],
+            [
+                { text: '🗑 Doch nicht', callback: 'order_reset' },
+                { text: '🏁 Bestellung schließen', callback: 'order_close' }
             ]
         ]
     },
@@ -25,12 +28,6 @@ const questions = {
         question: ' will 🍦 Eis, wer will noch Eis?',
         answerA: { text: 'Ich will auch', callback: 'iwant' },
         answerB: { text: 'Nein, danke', callback: 'nothanks' }
-    },
-    vote: {
-        question: ' will wissen, was es heute geben soll - Pizza oder Subway?',
-        answerA: { text: '🍕 Pizza', callback: 'choose_pizza' },
-        answerB: { text: '🌯 Subway', callback: 'choose_subway' },
-        answerC: { text: 'Nichts davon', callback: 'choose_nothing:' }
     }
 };
 
@@ -61,7 +58,7 @@ module.exports = function (botToken) {
             const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
             return ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
                 .then((response) => {
-                    const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'keyboardMessageId': response.message_id };
+                    const chatRoom = { 'active': true, 'votes': {}, 'isOrdered': false, 'type': vote, 'keyboardMessageId': response.message_id };
                     chatRooms[voteDatabase.chatRoomId] = chatRoom;
                     return ctx.telegram.sendMessage(voteDatabase.chatRoomId, 'Niemand hat abgestimmt.').then((secondResponse) => {
                         chatRoom.messageId = secondResponse.message_id;
@@ -93,7 +90,7 @@ module.exports = function (botToken) {
             const keyboard = Markup.inlineKeyboard(createButtonsForVote(vote));
             return ctx.telegram.sendMessage(voteDatabase.chatRoomId, ctx.from.first_name + questions[vote].question, keyboard.extra())
                 .then((response) => {
-                    const chatRoom = { 'active': true, 'votes': {}, 'type': vote, 'keyboardMessageId': response.message_id };
+                    const chatRoom = { 'active': true, 'votes': {}, 'isOrdered': false, 'type': vote, 'keyboardMessageId': response.message_id };
                     chatRooms[voteDatabase.chatRoomId] = chatRoom;
                     return ctx.telegram.sendMessage(voteDatabase.chatRoomId, 'Niemand hat abgestimmt.').then((secondResponse) => {
                         chatRoom.messageId = secondResponse.message_id;
@@ -115,9 +112,12 @@ module.exports = function (botToken) {
         const chatRoom = chatRooms[ctx.chat.id];
 
         if (chatRoom) {
-            console.log(arguments);
-            console.log(chatRoom.votes);
+            // console.log(arguments);
+            // console.log(chatRoom.votes);
 
+            if (chatRoom.isOrdered && voteAction !== 'go') {
+                return;
+            }
 
             let previousResponse = chatRoom.votes[ctx.from.id];
             if (!previousResponse) {
@@ -143,6 +143,8 @@ module.exports = function (botToken) {
                 previousResponse.go = param;
             } else if (voteAction === 'reset') {
                 delete chatRoom.votes[ctx.from.id];
+            } else if (voteAction === 'close') {
+                chatRoom.isOrdered = true;
             }
 
             let message = '';
@@ -154,6 +156,10 @@ module.exports = function (botToken) {
 
                 message += messages.createUserOverview(chatRoom.votes);
                 message += '\n\n' + sumOverview;
+
+                if (chatRoom.isOrdered) {
+                    message += '\n\n' + '🍕 Pizza wurde bereits bestellt!';
+                }
 
                 message += messages.createGoOverview(chatRoom.votes);
             }
@@ -178,6 +184,10 @@ module.exports = function (botToken) {
 
     app.action(/pizza_([a-z]+)_?(.*)/, (ctx) => {
         handleVoteAction(ctx, ctx.match[1], ctx.match[2]);
+    });
+
+    app.action(/order_(reset|close)/, (ctx) => {
+        handleVoteAction(ctx, ctx.match[1]);
     });
 
     app.action(/go_(.*)/, (ctx) => {
