@@ -31,14 +31,10 @@ function createUserOverview(votes) {
     voteArray.forEach((user, userIndex) => {
         const userSelection = Object.keys(user.selection);
         if (userSelection.length > 0) {
-            let userProducts = user.name + " möchte ";
+            let userProducts = user.name + ": ";
             userSelection.forEach((product, productIndex) => {
                 if (productIndex > 0) {
-                    if (productIndex === userSelection.length - 1) {
-                        userProducts += " & ";
-                    } else {
-                        userProducts += ", ";
-                    }
+                    userProducts += ", ";
                 }
                 let amount = user.selection[product];
                 let amountText = amountMap[String(amount)];
@@ -61,7 +57,7 @@ function createSumOverview(sums) {
     const sumKeys = Object.keys(sums);
     if (sumKeys.length > 0) {
         let total = 0.0;
-        let result = "Zu bestellen wären: ";
+        let result = "🍕 Bestellung: ";
         sumKeys.forEach((product) => {
             result += '\n';
             let amount = sums[product];
@@ -72,7 +68,7 @@ function createSumOverview(sums) {
         console.log("total");
         console.log(total);
         if (total > 0) {
-            result += "\nInsgesamt also min. " + total + " Pizzen";
+            result += "\nInsgesamt min. " + total + " Pizzen";
         }
         return result;
     } else {
