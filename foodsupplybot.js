@@ -163,10 +163,12 @@ module.exports = function (botToken) {
                 previousResponse.go = param;
             } else if (voteAction === 'reset') {
                 delete chatRoom.votes[ctx.from.id];
-            } else if (voteAction === 'close' && !chatRoom.isOrdered) {
+            } else if (voteAction === 'close') {
                 if (ctx.from.id === chatRoom.starter || chatRoom.admins.indexOf(ctx.from.id) !== -1) {
-                    chatRoom.isOrdered = true;
-                    isClosing = true;
+                    chatRoom.isOrdered = !chatRoom.isOrdered;
+                    if (chatRoom.isOrdered) {
+                        isClosing = true;
+                    }
                 }
             }
 
