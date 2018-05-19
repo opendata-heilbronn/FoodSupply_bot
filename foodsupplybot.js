@@ -37,6 +37,7 @@ const chatRooms = {};
 module.exports = function (botToken) {
     console.log('Running bot with token: ', botToken);
     const app = new Telegraf(botToken, { username: 'FoodSupply_bot' });
+
     app.command('start', ({ from, chat, reply }) => {
         console.log('start', from);
         console.log('chat', chat);
@@ -127,6 +128,7 @@ module.exports = function (botToken) {
         //console.log('chatRooms: ', chatRooms);
         console.log(voteAction, param);
         const chatRoom = chatRooms[ctx.chat.id];
+        let isClosing = false;
 
         if (chatRoom) {
             // console.log(arguments);
@@ -161,9 +163,10 @@ module.exports = function (botToken) {
                 previousResponse.go = param;
             } else if (voteAction === 'reset') {
                 delete chatRoom.votes[ctx.from.id];
-            } else if (voteAction === 'close') {
+            } else if (voteAction === 'close' && !chatRoom.isOrdered) {
                 if (ctx.from.id === chatRoom.starter || chatRoom.admins.indexOf(ctx.from.id) !== -1) {
                     chatRoom.isOrdered = true;
+                    isClosing = true;
                 }
             }
 
@@ -181,6 +184,15 @@ module.exports = function (botToken) {
                     message += '\n\n' + '🍕 Pizza wurde bereits bestellt!';
                 }
 
+                if (isClosing) {
+                     ctx.telegram.sendMessage(ctx.from.id,
+                         'Bestellung "' + ctx.chat.title + '":\n\n'
+                         + sumOverview + '\n\n'
+                         + '📞 07131/5943226');
+
+                     sendPayMemos(ctx, chatRoom.votes);
+                }
+
                 message += messages.createGoOverview(chatRoom.votes);
             }
 
@@ -196,6 +208,24 @@ module.exports = function (botToken) {
         }
 
         ctx.answerCbQuery();
+    }
+
+    function sendPayMemos(ctx, votes) {
+        Object.keys(votes).map((key) => { return key; }).forEach((key) => {
+            const user = votes[key];
+            if (user.selection) {
+                let amount = 0.0;
+                Object.keys(user.selection).forEach((product) => {
+                    if (user.selection[product]) {
+                        amount += parseFloat(user.selection[product]);
+                    }
+                });
+
+                if (amount) {
+                    ctx.telegram.sendMessage(key, 'Bitte bezahle ' + (amount * 8) + '€ für deine Bestellung in die CoWo Kasse neben dem Getränke Kühlschrank, danke!');
+                }
+            }
+        });
     }
 
     app.action(/qty_(.*)/, (ctx) => {
