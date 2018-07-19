@@ -13,7 +13,8 @@ const questions = {
             [{ text: 'Salami', callback: 'pizza_iwant_Salami' }, { text: 'Sucuk', callback: 'pizza_iwant_Sucuk' }],
             [{ text: 'Pepperoni', callback: 'pizza_iwant_Pepperoni' }, { text: 'Margherita', callback: 'pizza_iwant_Margherita' }],
             [{ text: 'Pilze', callback: 'pizza_iwant_Pilze' }, { text: 'Vier Käse', callback: 'pizza_iwant_Vier Käse' }],
-            [{ text: 'Seele', callback: 'pizza_iwant_Seele' }, { text: 'Seele mit Falafel', callback: 'pizza_iwant_Seele mit Falafel' }],
+            [{ text: 'Seele', callback: 'pizza_iwant_Seele' }, { text: 'Seele mit Falafel', callback: 'pizza_iwant_Seele mit Falafel' }],            
+            [{ text: 'Yufka', callback: 'pizza_iwant_Yufka' }, { text: 'Yufka mit Falafel', callback: 'pizza_iwant_Yufka mit Falafel' }],            
             [
                 { text: '🍔 Burger', callback: 'go_🍔 Burger' },
                 { text: '🌯 Subway', callback: 'go_🌯 Subway' }
@@ -187,12 +188,12 @@ module.exports = function (botToken) {
                 }
 
                 if (isClosing) {
-                     ctx.telegram.sendMessage(ctx.from.id,
-                         'Bestellung "' + ctx.chat.title + '":\n\n'
-                         + sumOverview + '\n\n'
-                         + '📞 07131/5943226');
+                    ctx.telegram.sendMessage(ctx.from.id,
+                        'Bestellung "' + ctx.chat.title + '":\n\n'
+                        + sumOverview + '\n\n'
+                        + '📞 07131/5943226');
 
-                     sendPayMemos(ctx, chatRoom.votes);
+                    sendPayMemos(ctx, chatRoom.votes);
                 }
 
                 message += messages.createGoOverview(chatRoom.votes);
