@@ -4,7 +4,9 @@ const foodsupplybot = require('./foodsupplybot')(config.botToken);
 
 const app = express();
 app.use(foodsupplybot.webhookCallback('/node/bot'));
-foodsupplybot.telegram.setWebhook(config.webHookURL);
+foodsupplybot.telegram.setWebhook(config.webHookURL).then((result) => {
+    console.log("setWebhook:", result);
+});
 if (!config.webHookURL) {
     foodsupplybot.startPolling();
 }
